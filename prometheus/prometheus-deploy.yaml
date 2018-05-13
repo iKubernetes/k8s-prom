@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: prometheus
+  name: prometheus-server
   namespace: prom
   labels:
     app: prometheus
@@ -11,10 +11,15 @@ spec:
   selector:
     matchLabels:
       app: prometheus
+      component: server
+    #matchExpressions:
+    #- {key: app, operator: In, values: [prometheus]}
+    #- {key: component, operator: In, values: [server]}
   template:
     metadata:
       labels:
         app: prometheus
+        component: server
       annotations:
         prometheus.io/scrape: 'false'
     spec:
