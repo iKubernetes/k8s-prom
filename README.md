@@ -5,5 +5,5 @@ k8s-prometheus-adapter目录：部署基于prometheus的自定义指标API服务
 podinfo目录：测试使用的podinfo相关的deployment和service对象的资源配置清单。
 
 
-## 参考：https://github.com/stefanprodan/k8s-prom-hpa
+#### 参考：https://github.com/stefanprodan/k8s-prom-hpa
 
