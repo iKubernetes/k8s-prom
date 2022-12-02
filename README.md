@@ -6,6 +6,12 @@
 - node_exporter目录：于kubernetes集群各节点部署node_exporter。
 - kube-state-metrics：聚合kubernetes资源对象，提供指标数据。
 
+## 
+
+```bash
+kubectl apply -f namespace.yaml
+```
+
 
 #### 参考：https://github.com/stefanprodan/k8s-prom-hpa
 
