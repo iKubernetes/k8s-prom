@@ -21,7 +21,8 @@ spec:
         app: prometheus
         component: server
       annotations:
-        prometheus.io/scrape: 'false'
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '9090'
     spec:
       serviceAccountName: prometheus
       containers:
