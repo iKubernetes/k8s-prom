@@ -235,6 +235,6 @@ data:
         target_label: __scheme__
         regex: (.+)
 
-    - job_name: 'Kubernetes'
-      static_configs:
-      - targets: ['kube-state-metrics:8080']
+    #- job_name: 'Kubernetes'
+    #  static_configs:
+    #  - targets: ['kube-state-metrics:8080']

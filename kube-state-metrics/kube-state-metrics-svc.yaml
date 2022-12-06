@@ -3,6 +3,7 @@ kind: Service
 metadata:
   annotations:
     prometheus.io/scrape: 'true'
+    prometheus.io/port: '8080'
   name: kube-state-metrics
   namespace: prom
   labels:
