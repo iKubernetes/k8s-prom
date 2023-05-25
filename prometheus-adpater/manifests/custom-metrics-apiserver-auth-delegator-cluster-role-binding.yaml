@@ -9,4 +9,4 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: custom-metrics-apiserver
-  namespace: prom
+  namespace: custom-metrics
