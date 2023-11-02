@@ -27,7 +27,7 @@ spec:
       serviceAccountName: prometheus
       containers:
       - name: prometheus
-        image: prom/prometheus:v2.44.0
+        image: prom/prometheus:v2.47.2
         imagePullPolicy: Always
         command:
           - prometheus
