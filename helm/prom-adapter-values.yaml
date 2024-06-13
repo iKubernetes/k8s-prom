@@ -1,0 +1,76 @@
+# Url to access prometheus
+prometheus:
+  # Value is templated
+  url: http://prometheus-server.monitoring.svc
+  port: 9090
+  path: ""
+
+replicas: 1
+
+rules:
+  default: true
+
+  custom: []
+    # - seriesQuery: '{__name__=~"^some_metric_count$"}'
+    #   resources:
+    #     template: <<.Resource>>
+    #   name:
+    #     matches: ""
+    #     as: "my_custom_metric"
+    #   metricsQuery: sum(<<.Series>>{<<.LabelMatchers>>}) by (<<.GroupBy>>)
+
+  # Mounts a configMap with pre-generated rules for use. Overrides the
+  # default, custom, external and resource entries
+  existing:
+
+  external:
+    - seriesQuery: 'http_requests_total{kubernetes_namespace!="",kubernetes_pod_name!=""}'
+      resources:
+        overrides:
+          kubernetes_namespace: {resource: "namespace"}
+          kubernetes_pod_name: {resource: "pod"}
+      name:
+        matches: "^(.*)_total"
+        as: "${1}_per_second"
+      metricsQuery: rate(<<.Series>>{<<.LabelMatchers>>}[1m])
+
+  resource:
+    cpu:
+      containerQuery: |
+        sum by (<<.GroupBy>>) (
+          rate(container_cpu_usage_seconds_total{container!="",<<.LabelMatchers>>}[3m])
+        )
+      nodeQuery: |
+        sum  by (<<.GroupBy>>) (
+          rate(node_cpu_seconds_total{mode!="idle",mode!="iowait",mode!="steal",<<.LabelMatchers>>}[3m])
+        )
+      resources:
+        overrides:
+          node:
+            resource: node
+          namespace:
+            resource: namespace
+          pod:
+            resource: pod
+      containerLabel: container
+    memory:
+      containerQuery: |
+        sum by (<<.GroupBy>>) (
+          avg_over_time(container_memory_working_set_bytes{container!="",<<.LabelMatchers>>}[3m])
+        )
+      nodeQuery: |
+        sum by (<<.GroupBy>>) (
+          avg_over_time(node_memory_MemTotal_bytes{<<.LabelMatchers>>}[3m])
+          -
+          avg_over_time(node_memory_MemAvailable_bytes{<<.LabelMatchers>>}[3m])
+        )
+      resources:
+        overrides:
+          node:
+            resource: node
+          namespace:
+            resource: namespace
+          pod:
+            resource: pod
+      containerLabel: container
+    window: 3m

@@ -1,0 +1,116 @@
+server:
+  ## Prometheus server container name
+  ##
+  name: server
+
+  global:
+    ## How frequently to scrape targets by default
+    ##
+    scrape_interval: 1m
+    ## How long until a scrape request times out
+    ##
+    scrape_timeout: 10s
+    ## How frequently to evaluate rules
+    ##
+    evaluation_interval: 1m
+
+  ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write
+  ##
+  remoteWrite: []
+  ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_read
+  ##
+  remoteRead: []
+
+  ingress:
+    ## If true, Prometheus server Ingress will be created
+    ##
+    enabled: true
+
+    # For Kubernetes >= 1.18 you should specify the ingress-controller via the field ingressClassName
+    # See https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/#specifying-the-class-of-an-ingress
+    # ingressClassName: nginx
+
+    ## Prometheus server Ingress annotations
+    ##
+    annotations:
+      kubernetes.io/ingress.class: cilium
+      #kubernetes.io/ingress.class: nginx
+    #   kubernetes.io/tls-acme: 'true'
+
+    ## Prometheus server Ingress hostnames with optional path
+    ## Must be provided if Ingress is enabled
+    ##
+    hosts:
+      - prometheus.magedu.com
+    #   - domain.com/prometheus
+
+    path: /
+
+    # pathType is only for k8s >= 1.18
+    pathType: Prefix
+
+  persistentVolume:
+    ## If true, Prometheus server will create/use a Persistent Volume Claim
+    ## If false, use emptyDir
+    ##
+    enabled: true
+
+    ## Prometheus server data Persistent Volume access modes
+    ## Must match those of existing PV or dynamic provisioner
+    ## Ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+    ##
+    accessModes:
+      - ReadWriteOnce
+
+    ## Prometheus server data Persistent Volume labels
+    ##
+    labels: {}
+
+    ## Prometheus server data Persistent Volume existing claim name
+    ## Requires server.persistentVolume.enabled: true
+    ## If defined, PVC must be created manually before volume will be bound
+    existingClaim: ""
+
+    ## Prometheus server data Persistent Volume mount root path
+    ##
+    mountPath: /data
+
+    ## Prometheus server data Persistent Volume size
+    ##
+    size: 8Gi
+
+    storageClass: "openebs-hostpath"
+
+    ## Prometheus server data Persistent Volume Binding Mode
+    ## If defined, volumeBindingMode: <volumeBindingMode>
+    ## If undefined (the default) or set to null, no volumeBindingMode spec is
+    ##   set, choosing the default mode.
+    ##
+    # volumeBindingMode: ""
+
+  ## Use a StatefulSet if replicaCount needs to be greater than 1 (see below)
+  ##
+  replicaCount: 1
+
+  service:
+    ## If false, no Service will be created for the Prometheus server
+    ##
+    enabled: true
+
+    externalIPs: []
+    servicePort: 9090
+    type: ClusterIP
+
+## alertmanager sub-chart configurable values
+## Please see https://github.com/prometheus-community/helm-charts/tree/main/charts/alertmanager
+##
+alertmanager:
+  ## If false, alertmanager will not be installed
+  ##
+  enabled: true
+
+  persistence:
+    size: 2Gi
+    storageClass: "openebs-hostpath"
+    accessModes:
+      - ReadWriteOnce
