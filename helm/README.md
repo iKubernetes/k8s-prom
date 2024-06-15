@@ -56,6 +56,8 @@ Prometheus Adapter通过一组“发现（discovery）”规则（rules）来确
 
 
 
+更详细的信息，请参考官方文档，https://github.com/kubernetes-sigs/prometheus-adapter/blob/master/docs/config.md。
+
 
 
 ### 测试
@@ -76,7 +78,6 @@ kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1
 ```bash
 kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/default/pods/*/http_requests_per_second | jq .
 ```
-
 
 
 
