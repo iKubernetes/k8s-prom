@@ -20,7 +20,7 @@ helm install prometheus prometheus-community/prometheus --namespace monitoring -
 
 ### Prometheus Adapter
 
-部署prometheus-adapter
+使用helm部署prometheus-adapter组件。
 
 ```bash
 helm install prometheus-adapter prometheus-community/prometheus-adapter --values prom-adapter-values.yaml --namespace monitoring
@@ -32,13 +32,13 @@ Prometheus Adapter通过一组“发现（discovery）”规则（rules）来确
 
 每条规则大致可以分为四个部分：
 
-> ***发现\***：指定Adpater如何找到此规则的所有 Prometheus 指标；
+> **发现**：指定Adpater如何找到此规则的所有 Prometheus 指标；
 >
-> ***关联\***：指定适Adpater应如何确定特定指标与哪些 Kubernetes 资源相关联；
+> **关联**：指定适Adpater应如何确定特定指标与哪些 Kubernetes 资源相关联；
 >
-> ***命名\***：指定Adpater应如何在自定义指标 API 中公开指标；
+> **命名**：指定Adpater应如何在自定义指标 API 中公开指标；
 >
-> ***查询\***：指定如何将对一个或多个 Kubernetes 对象上的特定指标的请求转换为对 Prometheus 的查询；
+> **查询**：指定如何将对一个或多个 Kubernetes 对象上的特定指标的请求转换为对 Prometheus 的查询；
 
 下面是一个示例：
 
