@@ -10,6 +10,7 @@ replicas: 1
 rules:
   default: true
 
+  # Enabling this option will cause custom metrics to be served at /apis/custom.metrics.k8s.io/v1beta1.
   custom: []
     # - seriesQuery: '{__name__=~"^some_metric_count$"}'
     #   resources:
@@ -23,7 +24,9 @@ rules:
   # default, custom, external and resource entries
   existing:
 
+  # Enabling this option will cause external metrics to be served at /apis/external.metrics.k8s.io/v1beta1. 
   external:
+    # 基于应用上特定的http_requests_total指标生成http_requests_per_second指标的示例
     - seriesQuery: 'http_requests_total{kubernetes_namespace!="",kubernetes_pod_name!=""}'
       resources:
         overrides:
@@ -34,6 +37,25 @@ rules:
         as: "${1}_per_second"
       metricsQuery: rate(<<.Series>>{<<.LabelMatchers>>}[1m])
 
+    # 有时，对于有些Java程序来说，基于内存资源用量进行自动扩缩容并不总是有效，因而可考虑根据JVM的平均使用量作为衡量指标；
+    # 下面就是用于生成相关自定义指标的规则示例；
+    - seriesQuery: '{__name__=~"jvm_memory_bytes_(used|max)",area="heap"}'
+      seriesFilters:
+      - is: ^jvm_memory_bytes_(used|max)$
+      resources:
+        overrides:
+          namespace:
+            resource: namespace
+          service:
+            resource : service
+          pod:
+            resource : pod
+      name:
+        matches: ^jvm_memory_bytes_(used|max)$
+        as: "jvm_used_percent_housing"
+      metricsQuery: ((sum((jvm_memory_used_bytes{area="heap", <<.LabelMatchers>>}))by(<<.GroupBy>>)*100/sum((jvm_memory_max_bytes{area="heap", <<.LabelMatchers>>}))by(<<.GroupBy>>)))/1000
+
+  # Enabling this option will cause resource metrics to be served at /apis/metrics.k8s.io/v1beta1
   resource:
     cpu:
       containerQuery: |
