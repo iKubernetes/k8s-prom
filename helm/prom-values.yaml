@@ -1,17 +1,31 @@
 server:
-  ## Prometheus server container name
-  ##
   name: server
 
+  # List of flags to override default parameters, e.g:
+  # - --enable-feature=agent
+  # - --storage.agent.retention.max-time=30m
+  # - --config.file=/etc/config/prometheus.yml
+  defaultFlagsOverride: []
+
+  extraFlags:
+    - web.enable-lifecycle
+    ## web.enable-admin-api flag controls access to the administrative HTTP API which includes functionality such as
+    ## deleting time series. This is disabled by default.
+    # - web.enable-admin-api
+    ##
+    ## storage.tsdb.no-lockfile flag controls BD locking
+    # - storage.tsdb.no-lockfile
+    ##
+    ## storage.tsdb.wal-compression flag enables compression of the write-ahead log (WAL)
+    # - storage.tsdb.wal-compression
+
+  ## Path to a configuration file on prometheus server container FS
+  configPath: /etc/config/prometheus.yml
+
   global:
-    ## How frequently to scrape targets by default
-    ##
+
     scrape_interval: 1m
-    ## How long until a scrape request times out
-    ##
     scrape_timeout: 10s
-    ## How frequently to evaluate rules
-    ##
     evaluation_interval: 1m
 
   ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write
@@ -22,75 +36,52 @@ server:
   remoteRead: []
 
   ingress:
-    ## If true, Prometheus server Ingress will be created
-    ##
     enabled: true
-
-    # For Kubernetes >= 1.18 you should specify the ingress-controller via the field ingressClassName
-    # See https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/#specifying-the-class-of-an-ingress
-    # ingressClassName: nginx
-
-    ## Prometheus server Ingress annotations
-    ##
-    annotations:
-      kubernetes.io/ingress.class: cilium
+    ingressClassName: nginx
+    annotations: {}
       #kubernetes.io/ingress.class: nginx
-    #   kubernetes.io/tls-acme: 'true'
+      #kubernetes.io/tls-acme: 'true'
 
-    ## Prometheus server Ingress hostnames with optional path
-    ## Must be provided if Ingress is enabled
-    ##
     hosts:
       - prometheus.magedu.com
-    #   - domain.com/prometheus
 
     path: /
-
-    # pathType is only for k8s >= 1.18
     pathType: Prefix
 
   persistentVolume:
     ## If true, Prometheus server will create/use a Persistent Volume Claim
-    ## If false, use emptyDir
-    ##
+    ## If false, use emptyDir  
     enabled: true
-
-    ## Prometheus server data Persistent Volume access modes
-    ## Must match those of existing PV or dynamic provisioner
-    ## Ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
-    ##
     accessModes:
       - ReadWriteOnce
-
-    ## Prometheus server data Persistent Volume labels
-    ##
-    labels: {}
-
-    ## Prometheus server data Persistent Volume existing claim name
-    ## Requires server.persistentVolume.enabled: true
-    ## If defined, PVC must be created manually before volume will be bound
-    existingClaim: ""
-
-    ## Prometheus server data Persistent Volume mount root path
-    ##
     mountPath: /data
-
-    ## Prometheus server data Persistent Volume size
-    ##
     size: 8Gi
-
     storageClass: "openebs-hostpath"
 
-    ## Prometheus server data Persistent Volume Binding Mode
-    ## If defined, volumeBindingMode: <volumeBindingMode>
-    ## If undefined (the default) or set to null, no volumeBindingMode spec is
-    ##   set, choosing the default mode.
-    ##
-    # volumeBindingMode: ""
+  emptyDir:
+    sizeLimit: ""
 
-  ## Use a StatefulSet if replicaCount needs to be greater than 1 (see below)
-  ##
+  ## 若副本数量多于1个，请启用下面的StatefulSet
   replicaCount: 1
+
+  statefulSet:
+    ## 设置为“true”，才可将server的副本数量设置为1个以上
+    enabled: false
+
+    podManagementPolicy: OrderedReady
+
+    ## Alertmanager headless service to use for the statefulset
+    ##
+    headless:
+      servicePort: 9090
+      ## Enable gRPC port on service to allow auto discovery with thanos-querier
+      gRPC:
+        enabled: false
+        servicePort: 10901
+        # nodePort: 10901
+
+    pvcDeleteOnStsDelete: false
+    pvcDeleteOnStsScale: false
 
   service:
     ## If false, no Service will be created for the Prometheus server
@@ -101,12 +92,43 @@ server:
     servicePort: 9090
     type: ClusterIP
 
-## alertmanager sub-chart configurable values
-## Please see https://github.com/prometheus-community/helm-charts/tree/main/charts/alertmanager
-##
-alertmanager:
-  ## If false, alertmanager will not be installed
+
+  ## Prometheus data retention period (default if not specified is 15 days)
   ##
+  retention: "15d"
+
+  ## Prometheus' data retention size. Supported units: B, KB, MB, GB, TB, PB, EB.
+  ##
+  retentionSize: ""
+
+## Prometheus server ConfigMap entries for rule files (allow prometheus labels interpolation)
+ruleFiles: {}
+
+## Prometheus server ConfigMap entries for scrape_config_files
+## (allows scrape configs defined in additional files)
+##
+scrapeConfigFiles: []
+
+## Prometheus server ConfigMap entries
+##
+serverFiles:
+  ## Alerts configuration
+  ## Ref: https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/
+  alerting_rules.yml: {}
+  # groups:
+  #   - name: Instances
+  #     rules:
+  #       - alert: InstanceDown
+  #         expr: up == 0
+  #         for: 5m
+  #         labels:
+  #           severity: page
+  #         annotations:
+  #           description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes.'
+  #           summary: 'Instance {{ $labels.instance }} down'
+
+
+alertmanager:
   enabled: true
 
   persistence:
@@ -114,3 +136,19 @@ alertmanager:
     storageClass: "openebs-hostpath"
     accessModes:
       - ReadWriteOnce
+
+kube-state-metrics:
+  enabled: true
+
+prometheus-node-exporter:
+  enabled: true
+
+prometheus-pushgateway:
+  enabled: true
+
+  # Optional service annotations
+  serviceAnnotations:
+    prometheus.io/probe: pushgateway
+
+
+
