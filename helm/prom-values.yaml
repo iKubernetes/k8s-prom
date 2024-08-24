@@ -128,6 +128,25 @@ serverFiles:
   #           summary: 'Instance {{ $labels.instance }} down'
 
 
+# adds additional scrape configs to prometheus.yml，其值必须为“字符”型数据，
+# 因此，需要在“extraScrapeConfigs:”添加一个“|”
+# example adds prometheus-blackbox-exporter scrape config
+extraScrapeConfigs: ""
+  # - job_name: 'prometheus-blackbox-exporter'
+  #   metrics_path: /probe
+  #   params:
+  #     module: [http_2xx]
+  #   static_configs:
+  #     - targets:
+  #       - https://example.com
+  #   relabel_configs:
+  #     - source_labels: [__address__]
+  #       target_label: __param_target
+  #     - source_labels: [__param_target]
+  #       target_label: instance
+  #     - target_label: __address__
+  #       replacement: prometheus-blackbox-exporter:9115
+
 alertmanager:
   enabled: true
 
