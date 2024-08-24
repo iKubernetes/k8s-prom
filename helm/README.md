@@ -71,6 +71,7 @@ kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1
 部署示例应用metrcis app，它附带有“http_requests_total”指标。
 
 ```bash
+kubectl apply -f https://raw.githubusercontent.com/iKubernetes/k8s-prom/master/prometheus-adpater/example-metrics/metrics-example-app.yaml
 ```
 
 待Metrics App的Pod就绪后，等待Prometheus Server的几个指标抓取周期，即可尝试获取由规则生成自定义指标http_requests_per_second。
@@ -81,3 +82,33 @@ kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/default/pods/*/
 
 
 
+### Blackbox Exporter
+
+部署Blackbox Exporter，启用黑盒监控；如下命令指定了Release名称为“prometheus-blackbox-exporter”。
+
+```bash
+helm install --name-template prometheus-blackbox-exporter  prometheus-community/prometheus-blackbox-exporter \
+          -f blackbox-exporter-values.yaml -n monitoring
+```
+
+随后，需要在Prometheus的values文件中，启用额外的Scrape Job，以关联Blackbox Exporter。一个示例配置如下，注意该字段的值必须为字符型数据，因此需要在字段后添加“|”。
+
+```yaml
+extraScrapeConfigs: |
+  - job_name: 'prometheus-blackbox-exporter'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - https://www.magedu.com
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: prometheus-blackbox-exporter:9115
+```
+
+最后，更新Prometheus的Release，确保配置生效。

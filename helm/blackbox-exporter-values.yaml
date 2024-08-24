@@ -1,0 +1,59 @@
+config:
+  modules:
+    http_2xx:
+      prober: http
+      timeout: 5s
+      http:
+        valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+        follow_redirects: true
+        preferred_ip_protocol: "ip4"
+
+
+extraConfigmapMounts: []
+  # - name: certs-configmap
+  #   mountPath: /etc/secrets/ssl/
+  #   subPath: certificates.crt # (optional)
+  #   configMap: certs-configmap
+  #   readOnly: true
+  #   defaultMode: 420
+
+service:
+  type: ClusterIP
+  port: 9115
+
+ingress:
+  enabled: true
+  className: "nginx"
+  hosts:
+    - host: probe.magedu.com
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+
+extraArgs: []
+  # - --history.limit=1000
+
+replicas: 1
+
+# Extra manifests to deploy as an array
+extraManifests: []
+  # - apiVersion: v1
+  #   kind: ConfigMap
+  #   metadata:
+  #   labels:
+  #     name: prometheus-extra
+  #   data:
+  #     extra-data: "value"
+
+configReloader:
+  enabled: false
+  containerPort: 8080
+  config:
+    logFormat: logfmt
+    logLevel: info
+    watchInterval: 1m
