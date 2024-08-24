@@ -80,11 +80,9 @@ kubectl apply -f https://raw.githubusercontent.com/iKubernetes/k8s-prom/master/p
 kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/default/pods/*/http_requests_per_second | jq .
 ```
 
-
-
 ### Blackbox Exporter
 
-部署Blackbox Exporter，启用黑盒监控；如下命令指定了Release名称为“prometheus-blackbox-exporter”。
+部署Blackbox Exporter，启用黑盒监控；如下命令指定了Release名称为“prometheus-blackbox-exporter”，该名称作为Service名称，将被下面示例中的配置引用。
 
 ```bash
 helm install --name-template prometheus-blackbox-exporter  prometheus-community/prometheus-blackbox-exporter \
