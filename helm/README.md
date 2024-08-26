@@ -1,32 +1,46 @@
-# 使用自定义指标
+# 部署Prometheus支持自定义指标
 
 
 
 ### Prometheus
 
-添加仓库
+首先，添加Prometheus Community的Chart仓库。
 
 ```bash
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts 
 ```
 
-部署Prometheus生态组件
+运行如下命令，即可加载本地的values文件，部署Prometheus生态组件。
 
 ```bash
 helm install prometheus prometheus-community/prometheus --namespace monitoring --values prom-values.yaml --create-namespace
 ```
 
+或者，也可以运行如下命令，直接加载在线的values文件，部署Prometheus生态组件。
 
+```bash
+helm install prometheus prometheus-community/prometheus --namespace monitoring \
+          --values https://raw.githubusercontent.com/iKubernetes/k8s-prom/master/helm/prom-values.yaml --create-namespace
+```
 
 ### Prometheus Adapter
 
-使用helm部署prometheus-adapter组件。
+#### 部署
+
+运行如下命令，即可基于本地的values文件部署prometheus-adapter组件。
 
 ```bash
 helm install prometheus-adapter prometheus-community/prometheus-adapter --values prom-adapter-values.yaml --namespace monitoring
 ```
 
+或者，也可以运行如下命令，直接加载在线的values文件，部署Prometheus Adapter组件。
 
+```bash
+helm install prometheus-adapter prometheus-community/prometheus-adapter --namespace monitoring \
+          --values https://raw.githubusercontent.com/iKubernetes/k8s-prom/master/helm/prom-adapter-values.yaml 
+```
+
+#### 规则配置说明
 
 Prometheus Adapter通过一组“发现（discovery）”规则（rules）来确定要公开哪些指标，以及如何公开这些指标。每条规则都是独立执行的（因此要确保规则彼此互斥），它通常包含需要由Adpater在API 公开指标时所需采取的多个个步骤。
 
@@ -56,7 +70,7 @@ Prometheus Adapter通过一组“发现（discovery）”规则（rules）来确
 
 
 
-更详细的信息，请参考官方文档，https://github.com/kubernetes-sigs/prometheus-adapter/blob/master/docs/config.md。
+更详细的信息，请参考[官方文档](https://github.com/kubernetes-sigs/prometheus-adapter/blob/master/docs/config.md)。
 
 
 
@@ -79,6 +93,8 @@ kubectl apply -f https://raw.githubusercontent.com/iKubernetes/k8s-prom/master/p
 ```bash
 kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/default/pods/*/http_requests_per_second | jq .
 ```
+
+
 
 ### Blackbox Exporter
 
