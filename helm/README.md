@@ -10,7 +10,7 @@
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts 
 ```
 
-运行如下命令，即可加载本地的values文件，部署Prometheus生态组件。
+运行如下命令，即可加载本地的values文件，部署Prometheus生态组件。本示例中，Prometheus的版本被限定在“v2”的版本上，使用的是“v2.55.1”的版本。若要移除该限制，注释掉prom-values.yaml文件中的“server.image.tag”即可。
 
 ```bash
 helm install prometheus prometheus-community/prometheus --namespace monitoring --values prom-values.yaml --create-namespace
