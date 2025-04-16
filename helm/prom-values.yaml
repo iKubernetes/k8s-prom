@@ -1,6 +1,14 @@
 server:
   name: server
 
+  # 限制部署运行2.x系列的Prometheus，3.x系列的版本同Metrics-APP示例存在兼容性问题；
+  # 现实应用中，可以不用顾及该限制；
+  image:
+    repository: quay.io/prometheus/prometheus
+    # if not set appVersion field from Chart.yaml is used
+    tag: "v2.55.1"
+    pullPolicy: IfNotPresent
+
   # List of flags to override default parameters, e.g:
   # - --enable-feature=agent
   # - --storage.agent.retention.max-time=30m
